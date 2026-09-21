@@ -10,6 +10,14 @@ gauge and drains away. Only sustained scratching fills the gauge to the
 target. Difficulty ("cat personality") is set purely by the decay rate, so a
 harder mode asks for *faster* tapping, not harder hits.
 
+<p align="center">
+  <img src="doc/render_door_assembly.png" alt="Door assembly: servo on top, flap riding in the side channels" height="380">
+  &nbsp;&nbsp;
+  <img src="doc/render_test_bench.png" alt="Test bench: door rig, cat cage and monitoring laptop on a table" height="380">
+</p>
+<p align="center"><em>Left: door assembly — the SG90 servo lifts the flap through the side channels.
+Right: test bench layout with the rig, a cat enclosure and the monitoring laptop.</em></p>
+
 ## What's in this repository
 
 | Path | Contents |
