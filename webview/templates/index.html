@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scratch-to-Open</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%232b9a80'%3E%3Ccircle cx='7' cy='8' r='2.2'/%3E%3Ccircle cx='12' cy='5.5' r='2.2'/%3E%3Ccircle cx='17' cy='8' r='2.2'/%3E%3Cpath d='M12 10c-3.6 0-6.5 3-6.5 5.8 0 1.8 1.3 3.2 3 3.2 1.2 0 2-.5 3.5-.5s2.3.5 3.5.5c1.7 0 3-1.4 3-3.2C18.5 13 15.6 10 12 10z'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/static/style.css">
+  <script type="importmap">{ "imports": { "three": "/static/vendor/three.module.min.js" } }</script>
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg class="paw" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="7" cy="8" r="2.2"/><circle cx="12" cy="5.5" r="2.2"/><circle cx="17" cy="8" r="2.2"/>
+      <path d="M12 10c-3.6 0-6.5 3-6.5 5.8 0 1.8 1.3 3.2 3 3.2 1.2 0 2-.5 3.5-.5s2.3.5 3.5.5c1.7 0 3-1.4 3-3.2C18.5 13 15.6 10 12 10z"/>
+    </svg>
+    <div>
+      <h1>Scratch-to-Open</h1>
+      <p data-i18n="tagline"></p>
+    </div>
+  </div>
+
+  <div class="diffbar">
+    <span class="diffbar-label" data-i18n="difficulty"></span>
+    <div class="seg compact" id="diffSeg">
+      <button data-diff="kitten"><b data-i18n="kitten"></b><small>2/s</small></button>
+      <button data-diff="adult"><b data-i18n="adult"></b><small>5/s</small></button>
+      <button data-diff="grumpy"><b data-i18n="grumpy"></b><small>10/s</small></button>
+    </div>
+  </div>
+
+  <div class="conn">
+    <span class="dot" id="connDot"></span>
+    <span class="conn-label" id="connLabel"></span>
+    <select id="portSelect" aria-label="Serial port"></select>
+    <button class="btn icon" id="refreshPorts" data-i18n-title="refresh">&#x21bb;</button>
+    <button class="btn primary" id="connectBtn"></button>
+    <button class="btn" id="simBtn"></button>
+  </div>
+
+  <div class="tools">
+    <button class="btn ghost" id="soundBtn" data-i18n-title="sound">&#x1F50A;</button>
+    <button class="btn ghost" id="themeBtn" data-i18n-title="theme">&#x263E;</button>
+  </div>
+</header>
+
+<main class="grid">
+  <!-- 3D twin -->
+  <section class="card area-scene">
+    <div class="card-head">
+      <h2 data-i18n="twin"></h2>
+      <div class="row">
+        <span class="badge" id="stateBadge"></span>
+        <select id="coatSelect" class="compact" data-i18n-title="coat">
+          <option value="black" data-i18n="coats.black"></option>
+          <option value="orange" data-i18n="coats.orange"></option>
+          <option value="siamese" data-i18n="coats.siamese"></option>
+          <option value="mackerel" data-i18n="coats.mackerel"></option>
+          <option value="white" data-i18n="coats.white"></option>
+          <option value="calico" data-i18n="coats.calico"></option>
+        </select>
+        <div class="seg compact" id="viewSeg">
+          <button data-view="front" data-i18n="viewFront"></button>
+          <button data-view="iso" class="active" data-i18n="viewIso"></button>
+          <button data-view="rear" data-i18n="viewRear"></button>
+        </div>
+        <button class="btn icon small" id="rotateBtn" data-i18n-title="autoRotate">&#x21bb;</button>
+      </div>
+    </div>
+    <div class="scene" id="scene"></div>
+    <p class="hint" id="padHint" data-i18n="padHint"></p>
+  </section>
+
+  <!-- Stat tiles -->
+  <section class="area-stats stats">
+    <div class="tile"><span class="label" data-i18n="peak"></span><span class="value mono" id="statPeak">0</span><span class="sub">ADC 0-1023</span></div>
+    <div class="tile"><span class="label" data-i18n="gauge"></span><span class="value mono" id="statGauge">0</span><span class="sub mono" id="statGaugeSub"></span></div>
+    <div class="tile"><span class="label" data-i18n="servo"></span><span class="value mono" id="statServo">0&deg;</span><span class="sub mono" id="statRise"></span></div>
+    <div class="tile"><span class="label" data-i18n="opens"></span><span class="value mono" id="statOpens">0</span><span class="sub" data-i18n="opensSub"></span></div>
+  </section>
+
+  <!-- Waveform -->
+  <section class="card area-wave">
+    <div class="card-head">
+      <h2 data-i18n="wave"></h2>
+      <div class="legend">
+        <span><i class="sw peak"></i><span data-i18n="peak"></span></span>
+        <span><i class="sw gauge"></i><span data-i18n="gauge"></span></span>
+        <span><i class="sw amp"></i><span data-i18n="threshold"></span></span>
+      </div>
+    </div>
+    <canvas id="wave" height="160"></canvas>
+  </section>
+
+  <!-- Controls -->
+  <section class="card area-ctrl">
+    <div class="card-head"><h2 data-i18n="controls"></h2></div>
+    <div class="ctrl-grid">
+      <div class="field">
+        <label data-i18n="difficulty"></label>
+        <p class="note strong" id="diffInfo"></p>
+        <p class="note" data-i18n="difficultyNote"></p>
+      </div>
+
+      <div class="field">
+        <label data-i18n="mode"></label>
+        <div class="seg" id="modeSeg">
+          <button data-exhibit="1"><b data-i18n="exhibit"></b><small>1 s / 4 s</small></button>
+          <button data-exhibit="0"><b data-i18n="real"></b><small>2 s / 3 s</small></button>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="beamToggle">
+          <span class="track"></span>
+          <span data-i18n="beamBlocked"></span>
+        </label>
+      </div>
+
+      <div class="field">
+        <label><span data-i18n="scratchAmp"></span> <span class="mono" id="ampVal">80</span></label>
+        <input type="range" id="ampRange" min="40" max="700" step="10" value="80">
+        <p class="note" data-i18n="scratchAmpNote"></p>
+      </div>
+
+      <div class="field">
+        <label data-i18n="tools"></label>
+        <div class="row">
+          <button class="btn" id="testOpenBtn" data-i18n="testOpen"></button>
+          <button class="btn sim-only" id="tapBtn" data-i18n="tapTable"></button>
+          <button class="btn sim-only" id="autoBtn" data-i18n="autoScratch"></button>
+        </div>
+        <p class="note" id="toolsNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Request log -->
+  <section class="card area-log">
+    <div class="card-head">
+      <h2 data-i18n="log"></h2>
+      <button class="btn ghost small" id="clearLog" data-i18n="clear"></button>
+    </div>
+    <ul class="events" id="events"></ul>
+    <p class="empty" id="eventsEmpty" data-i18n="logEmpty"></p>
+  </section>
+</main>
+
+<footer class="foot">
+  <span data-i18n="footer"></span>
+  <span class="mono small"><span id="resetWarn" class="warn" hidden></span> <span id="lineRate"></span></span>
+</footer>
+
+<script src="/static/i18n.js"></script>
+<script type="module" src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+# working / temporary files
+PRD.md
+*.bak
+__pycache__/
+*.pyc
+
+# local editor settings
+.vscode/
+.claude/
+
+# runtime data
+webview/data/*.csv
+
+# source archives and working documents
+doc/*.zip
+doc/*.docx
